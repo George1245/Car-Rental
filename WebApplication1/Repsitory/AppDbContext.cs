@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using WebApplication1.Models;
@@ -13,6 +14,21 @@ namespace WebApplication1.Repsitory
 
         }
 
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            // Seed default role "User"
+            string roleId = Guid.NewGuid().ToString();
+
+            builder.Entity<IdentityRole>().HasData(new IdentityRole
+            {
+                Id = roleId,
+                Name = "User",
+                NormalizedName = "USER"
+            });
+        }
         public virtual DbSet <Car>  Cars{ get; set; }
         public virtual DbSet <CarRent> Rents{ get; set; }
     }
