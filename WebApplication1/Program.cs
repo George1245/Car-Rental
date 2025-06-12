@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 using WebApplication1.Models;
 using WebApplication1.Repsitory;
@@ -16,7 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(u =>
 });
 
 builder.Services.AddIdentity<App_User, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
-builder.Services.AddAuthentication(option => option.DefaultAuthenticateScheme = "JWT").AddJwtBearer(opt =>
+builder.Services.AddAuthentication(option => option.DefaultAuthenticateScheme = "JWT").AddJwtBearer("JWT", opt =>
 {
     opt.TokenValidationParameters=new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
@@ -25,6 +26,7 @@ builder.Services.AddAuthentication(option => option.DefaultAuthenticateScheme = 
         ValidateIssuer=false
     };
 });
+builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<App_User>();
 
@@ -33,7 +35,38 @@ builder.Services.AddScoped<IAccountRepository,AccountRepository>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    // 2a. Define the security scheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Enter: Bearer {your JWT token}"
+    });
+
+    // 2b. Apply globally (so the Authorize button works)
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+          new OpenApiSecurityScheme
+          {
+            Reference = new OpenApiReference
+            {
+              Type = ReferenceType.SecurityScheme,
+              Id = "Bearer"
+            }
+          },
+          new string[] { }
+        }
+    });
+
+    // If using Swashbuckle.Filters for finer control per-operation:
+    // c.OperationFilter<SecurityRequirementsOperationFilter>();
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,6 +78,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
