@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApplication1.Repsitory;
 
@@ -11,9 +12,11 @@ using WebApplication1.Repsitory;
 namespace WebApplication1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250612091722_Loginfunction")]
+    partial class Loginfunction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,11 +54,7 @@ namespace WebApplication1.Migrations
                     b.HasData(
                         new
                         {
-
                             Id = "10242046-8bc6-4a57-94dd-c5c7d06736b9",
-
-                            Id = "10242046-8bc6-4a57-94dd-c5c7d06736b9",
-
                             Name = "User",
                             NormalizedName = "USER"
                         });
