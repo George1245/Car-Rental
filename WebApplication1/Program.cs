@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
+
 using Microsoft.Extensions.Configuration;
+
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WebApplication1.Models;
@@ -44,7 +47,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
