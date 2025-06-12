@@ -14,6 +14,16 @@ builder.Services.AddDbContext<AppDbContext>(u =>
 });
 
 builder.Services.AddIdentity<App_User, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+builder.Services.AddAuthentication(option => option.DefaultAuthenticateScheme = "JWT").AddJwtBearer(opt =>
+{
+    opt.TokenValidationParameters=new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        IssuerSigningKey= new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Keys:JwtKey"])),
+        ValidateAudience=false,
+        ValidateIssuer=false
+    };
+});
+
 builder.Services.AddScoped<App_User>();
 
 builder.Services.AddScoped<IAccountRepository,AccountRepository>();
@@ -32,7 +42,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
