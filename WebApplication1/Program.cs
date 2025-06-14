@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +21,14 @@ builder.Services.AddDbContext<AppDbContext>(u =>
 });
 
 builder.Services.AddIdentity<App_User, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
-builder.Services.AddAuthentication(option => option.DefaultAuthenticateScheme = "JWT").AddJwtBearer("JWT", opt =>
+builder.Services.AddAuthentication(option =>
+{
+    option.DefaultAuthenticateScheme="JWT";
+    option.DefaultChallengeScheme= "JWT";
+    option.DefaultScheme= "JWT";
+}
+
+).AddJwtBearer("JWT", opt =>
 {
     opt.TokenValidationParameters=new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
