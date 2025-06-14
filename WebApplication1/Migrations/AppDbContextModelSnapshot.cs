@@ -51,11 +51,7 @@ namespace WebApplication1.Migrations
                     b.HasData(
                         new
                         {
-
-                            Id = "10242046-8bc6-4a57-94dd-c5c7d06736b9",
-
-
-
+                            Id = "f5a294ca-08f5-4210-bba6-8eb377ae5100",
                             Name = "User",
                             NormalizedName = "USER"
                         });

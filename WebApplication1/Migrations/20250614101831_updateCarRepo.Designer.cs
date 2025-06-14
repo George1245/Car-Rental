@@ -12,8 +12,8 @@ using WebApplication1.Repsitory;
 namespace WebApplication1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250612130703_second")]
-    partial class second
+    [Migration("20250614101831_updateCarRepo")]
+    partial class updateCarRepo
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,7 +54,7 @@ namespace WebApplication1.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "a7b0ba09-7aaa-43cc-a3aa-575d08c44d68",
+                            Id = "f5a294ca-08f5-4210-bba6-8eb377ae5100",
                             Name = "User",
                             NormalizedName = "USER"
                         });

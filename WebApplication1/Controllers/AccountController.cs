@@ -36,7 +36,7 @@ namespace WebApplication1.Controllers
         {
             if (_user != null)
             {
-             if(_accountRepo.LogIn(_user)!=null)
+             if(await _accountRepo.LogIn(_user)!=null)
                 {
                     return Ok(await _accountRepo.LogIn(_user));
                 }

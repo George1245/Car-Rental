@@ -20,36 +20,32 @@ namespace WebApplication1.Repsitory
         public SignInManager<App_User> _signInManager;
         public RoleManager<IdentityRole> _roleManager;
         private readonly AppDbContext _appDbContext;
-        public App_User _user;
         public IConfiguration Configuration;
-        public AccountRepository(UserManager<App_User> _userManager, SignInManager<App_User> _signInManager, RoleManager<IdentityRole> _roleManager,AppDbContext appDbContext,App_User _user, IConfiguration _Configuration)
+        public AccountRepository(UserManager<App_User> _userManager, SignInManager<App_User> _signInManager, RoleManager<IdentityRole> _roleManager,AppDbContext appDbContext, IConfiguration _Configuration)
         { 
             this._userManager = _userManager;
             this._signInManager = _signInManager;   
             this._roleManager = _roleManager;   
             this._appDbContext = appDbContext;
-            this._user =_user ;
             Configuration=_Configuration;
         }   
 
-        public App_User getUserByName(string userName)
-        {
-            var user = _appDbContext.Users.FirstOrDefault(U => U.UserName == userName);
-            return user;
-        }
+      
         public async Task<bool> Register(userRegisterDTO userRegister)
         {
 
             if (userRegister != null)
-            { 
-             _user.Email = userRegister.Email;
-            _user.UserName = userRegister.userName;
-            _user.PhoneNumber= userRegister.phoneNumber;
-                IdentityResult userRegisterResult = await _userManager.CreateAsync(_user,userRegister.Password);
+            {
+                var app_User = new App_User {
+                 Email = userRegister.Email,
+                   UserName = userRegister.userName,
+                  PhoneNumber = userRegister.phoneNumber,
+                };
+                IdentityResult userRegisterResult = await _userManager.CreateAsync(app_User,userRegister.Password);
                 if (userRegisterResult.Succeeded)
                 {
                     
-                   IdentityResult roleResult = await _userManager.AddToRoleAsync(_user,"User");
+                   IdentityResult roleResult = await _userManager.AddToRoleAsync(app_User,"User");
                     if (roleResult.Succeeded)
                     { 
                     return true;
@@ -64,40 +60,42 @@ namespace WebApplication1.Repsitory
 
         }
         //
-        public async Task<string> LogIn(UserLoginDTO userLogin) 
+        public async Task<string> LogIn(UserLoginDTO userLogin)
         {
-            if (userLogin != null)
+            if (userLogin == null) return null;
+
+            // Use only UserManager, not direct DbContext access
+            var user = await _userManager.FindByNameAsync(userLogin.userName);
+            if (user == null) return null;
+
+            var passwordValid = await _userManager.CheckPasswordAsync(user, userLogin.Password);
+            if (!passwordValid) return null;
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, user.UserName),
+        new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? "")
+    };
+
+            foreach (var role in roles)
             {
-                App_User User = getUserByName(userLogin.userName);
-                if (User != null)
-                {
-                    if (await _userManager.CheckPasswordAsync(User, userLogin.Password))
-                    {
-
-
-                        //create Token
-                        List<Claim> claims = new List<Claim> {
-                new Claim(ClaimTypes.Name,User.UserName),
-                new Claim(ClaimTypes.MobilePhone,User.PhoneNumber)
-                };
-                        var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["Keys:JwtKey"]));
-                        var signincredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                        var Token = new JwtSecurityToken(
-                            claims: claims,
-                            expires: DateTime.Now.AddDays(1),
-                            signingCredentials: signincredentials
-                            );
-                        string secretToken = new JwtSecurityTokenHandler().WriteToken(Token);
-                        return secretToken;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
+                claims.Add(new Claim(ClaimTypes.Role, role));
             }
-            return null;
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Keys:JwtKey"]));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(1),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
         public Task<bool> LogOut()
         {
             return Task.FromResult(true);

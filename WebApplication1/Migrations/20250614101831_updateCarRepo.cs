@@ -5,7 +5,7 @@
 namespace WebApplication1.Migrations
 {
     /// <inheritdoc />
-    public partial class second : Migration
+    public partial class updateCarRepo : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,7 +18,7 @@ namespace WebApplication1.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[] { "a7b0ba09-7aaa-43cc-a3aa-575d08c44d68", null, "User", "USER" });
+                values: new object[] { "f5a294ca-08f5-4210-bba6-8eb377ae5100", null, "User", "USER" });
         }
 
         /// <inheritdoc />
@@ -27,7 +27,7 @@ namespace WebApplication1.Migrations
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "a7b0ba09-7aaa-43cc-a3aa-575d08c44d68");
+                keyValue: "f5a294ca-08f5-4210-bba6-8eb377ae5100");
 
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
