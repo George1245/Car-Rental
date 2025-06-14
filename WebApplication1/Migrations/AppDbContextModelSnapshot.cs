@@ -54,7 +54,7 @@ namespace WebApplication1.Migrations
 
                             Id = "10242046-8bc6-4a57-94dd-c5c7d06736b9",
 
-                            Id = "10242046-8bc6-4a57-94dd-c5c7d06736b9",
+
 
                             Name = "User",
                             NormalizedName = "USER"
