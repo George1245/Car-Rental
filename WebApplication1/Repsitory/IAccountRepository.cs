@@ -6,8 +6,9 @@ namespace WebApplication1.Repsitory
     public interface IAccountRepository
     {
         public Task<bool> Register(userRegisterDTO userRegister);
-        public Task<bool> LogIn(UserLoginDTO userLogin);
+        public Task<string> LogIn(UserLoginDTO userLogin);
         public Task<bool> LogOut();
+        public App_User getUserByName(string userName);
 
     }
 }
