@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(u =>
 {
-    u.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    u.UseSqlServer(builder.Configuration.GetConnectionString("PeterConnection"));
 });
 
 builder.Services.AddIdentity<App_User, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
@@ -38,8 +38,10 @@ builder.Services.AddAuthentication(option =>
     };
 });
 builder.Services.AddAuthorization();
+builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<App_User>();
+builder.Services.AddScoped<ICarRepository,CarRepository>();
 
 builder.Services.AddScoped<IAccountRepository,AccountRepository>();
 
