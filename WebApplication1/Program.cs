@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(u =>
 {
-    u.UseSqlServer(builder.Configuration.GetConnectionString("PeterConnection"));
+    u.UseSqlServer(builder.Configuration.GetConnectionString("GeorgeConnection"));
 });
 
 builder.Services.AddIdentity<App_User, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
@@ -42,8 +42,10 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<App_User>();
 builder.Services.AddScoped<ICarRepository,CarRepository>();
+builder.Services.AddScoped<CarRent>();
 
 builder.Services.AddScoped<IAccountRepository,AccountRepository>();
+builder.Services.AddScoped<IcustomerRepository,CustomerRepository>();
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

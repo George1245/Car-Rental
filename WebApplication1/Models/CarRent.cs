@@ -18,8 +18,10 @@ namespace WebApplication1.Models
         public Car car { get; set; }
 
         public float RentalDuration { get; set; }
-        public float CostPerHour { get; set; }
-
+        //Rent  Request Status  
+        public string requestStatus {  get; set; }
+        public double totalCost {  get; set; }
+  
 
     }
 }

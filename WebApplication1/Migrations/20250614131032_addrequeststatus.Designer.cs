@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApplication1.Repsitory;
 
@@ -11,9 +12,11 @@ using WebApplication1.Repsitory;
 namespace WebApplication1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250614131032_addrequeststatus")]
+    partial class addrequeststatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,7 +54,7 @@ namespace WebApplication1.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "ad6ca9f5-a6f9-4679-8f27-003f40b91fba",
+                            Id = "81d3d289-be47-457e-8a6c-83c8abfb7a65",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -268,9 +271,6 @@ namespace WebApplication1.Migrations
                     b.Property<int>("Year")
                         .HasColumnType("int");
 
-                    b.Property<float>("costPerHour")
-                        .HasColumnType("real");
-
                     b.HasKey("Id");
 
                     b.ToTable("Cars");
@@ -287,6 +287,9 @@ namespace WebApplication1.Migrations
                     b.Property<int>("CarId")
                         .HasColumnType("int");
 
+                    b.Property<float>("CostPerHour")
+                        .HasColumnType("real");
+
                     b.Property<float>("RentalDuration")
                         .HasColumnType("real");
 
@@ -297,9 +300,6 @@ namespace WebApplication1.Migrations
                     b.Property<string>("requestStatus")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("totalCost")
-                        .HasColumnType("float");
 
                     b.HasKey("Id");
 

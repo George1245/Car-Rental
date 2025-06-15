@@ -76,7 +76,8 @@ namespace WebApplication1.Repsitory
             var claims = new List<Claim>
     {
         new Claim(ClaimTypes.Name, user.UserName),
-        new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? "")
+        new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? ""),
+        new Claim(ClaimTypes.NameIdentifier, user.Id)
     };
 
             foreach (var role in roles)
