@@ -40,16 +40,6 @@ namespace WebApplication1.Repsitory
                 {
 
                     Car carMapper = _mapper.Map(_car,car);
-
-               //car.Year = carMapper.Year;
-                    //car.Capacity = carMapper.Capacity;
-                    //car.Model= carMapper.Model;
-                    //car.Availability= _car.Availability;
-                    //car.Quantity= _car.Quantity;
-                    //car.Licesnse_Plate=_car.Licesnse_Plate;
-                    //car.Type= _car.Type;
-                    //car.Trasnsmission= _car.Trasnsmission;
-                    //car.CompanyName= _car.CompanyName;
                     _appContext.Cars.Update(carMapper);
                     _appContext.SaveChanges();
                     return true;

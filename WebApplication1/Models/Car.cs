@@ -12,5 +12,7 @@
         public bool Availability { get; set; }
         public int Capacity { get; set; }
         public string Trasnsmission { get; set; }
+        public float costPerHour { get; set; }
+
     }
 }

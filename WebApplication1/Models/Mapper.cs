@@ -5,9 +5,10 @@ namespace WebApplication1.Models
 {
     public class Mapper : Profile
     {
-        public Mapper() {
+        public Mapper()
+        {
 
             CreateMap<CarDTO, Car>();
-}
+        }
     }
 }
