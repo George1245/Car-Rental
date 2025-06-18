@@ -9,9 +9,8 @@ namespace WebApplication1.Repsitory
     public class AppDbContext: IdentityDbContext<App_User>
     {
     
-        public AppDbContext(DbContextOptions options) :base(options)
+        public AppDbContext(DbContextOptions options  ) : base(options)
         {
-
         }
 
 
@@ -27,6 +26,14 @@ namespace WebApplication1.Repsitory
                 Id = roleId,
                 Name = "User",
                 NormalizedName = "USER"
+            });
+
+            roleId = Guid.NewGuid().ToString();
+            builder.Entity<IdentityRole>().HasData(new IdentityRole
+            {
+                Id = roleId,
+                Name = "Admin",
+                NormalizedName = "ADMIN"
             });
         }
         public virtual DbSet <Car>  Cars{ get; set; }

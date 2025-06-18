@@ -45,12 +45,14 @@ namespace WebApplication1.Controllers
  
             return BadRequest();
         }
-        [Authorize]
+
+        [Authorize(Roles ="Admin")]
         [HttpGet(nameof(Test))]
         public ActionResult Test()
         {
             return Ok("you are authorzed");
         }
+
 
 
     }

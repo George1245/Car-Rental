@@ -48,30 +48,7 @@ namespace WebApplication1.Controllers
 
         }
 
-        [HttpPost(nameof(addCar))]
-        public ActionResult addCar(CarDTO _car)
-        {
-            if (_carRepo.addCar(_car))
-                return Ok("Car is added!");
-            return BadRequest("There is no Car added!");
-        }
-
-        [HttpPost(nameof(editCar))]
-        public ActionResult editCar(int id, CarDTO _car)
-        {
-            if (_carRepo.editCar(id,_car))
-                return Ok("Car is updated!");
-            return BadRequest("There is no Cars updated!");
-
-        }
-
-        [HttpPost(nameof(removeCar))]
-        public ActionResult removeCar(int id)
-        {
-            if (_carRepo.removeCar(id))
-                return Ok("Car is removed!!!");
-            return BadRequest("There is no Cars removed!!!");
-        }
+     
 
 
     }
