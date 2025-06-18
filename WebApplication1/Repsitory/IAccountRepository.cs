@@ -8,5 +8,6 @@ namespace WebApplication1.Repsitory
         public Task<bool> Register(userRegisterDTO userRegister);
         public Task<string> LogIn(UserLoginDTO userLogin);
         public Task<bool> LogOut();
+
     }
 }

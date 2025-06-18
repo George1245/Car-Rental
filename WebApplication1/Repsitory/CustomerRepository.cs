@@ -28,7 +28,7 @@ namespace WebApplication1.Repsitory
                 Car _car = _Context.Cars.FirstOrDefault(x => x.Type == request.Type && x.Model== request.Model);       
                 var dbCarCount=_Context.Rents.Where(rent => rent.CarId == _car.Id).Count();
                 //check if all cars quantity and cars in db is rented then make this car availability false
-                if (_car != null && dbCarCount<=_car.Quantity)
+                if (_car != null && dbCarCount<=_car.Quantity&&dbCarCount!=0)
                 {
                     Rent.car = _car;
                     Rent.RentalDuration = request.RentalDuration;

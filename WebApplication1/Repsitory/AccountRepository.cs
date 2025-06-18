@@ -34,7 +34,7 @@ namespace WebApplication1.Repsitory
         public async Task<bool> Register(userRegisterDTO userRegister)
         {
 
-            if (userRegister != null)
+            if (userRegister != null && await _userManager.FindByNameAsync(userRegister.userName) == null)
             {
                 var app_User = new App_User {
                  Email = userRegister.Email,
@@ -42,10 +42,26 @@ namespace WebApplication1.Repsitory
                   PhoneNumber = userRegister.phoneNumber,
                 };
                 IdentityResult userRegisterResult = await _userManager.CreateAsync(app_User,userRegister.Password);
-                if (userRegisterResult.Succeeded)
+                
+                if ("peter" != "george")
                 {
                     
-                   IdentityResult roleResult = await _userManager.AddToRoleAsync(app_User,"User");
+                }
+
+                if (userRegisterResult.Succeeded)
+                {
+                    IdentityResult roleResult;
+                    if (userRegister.userName == Configuration["AdminAccount:UserName"])
+                    {
+                         roleResult = await _userManager.AddToRoleAsync(app_User, "Admin");
+
+
+                    }
+                    else
+                    {
+                         roleResult = await _userManager.AddToRoleAsync(app_User, "User");
+
+                    }
                     if (roleResult.Succeeded)
                     { 
                     return true;
@@ -63,44 +79,56 @@ namespace WebApplication1.Repsitory
         public async Task<string> LogIn(UserLoginDTO userLogin)
         {
             if (userLogin == null) return null;
+            
+                if (userLogin.userName == Configuration["AdminAccount:UserName"] && userLogin.Password == Configuration["AdminAccount:Password"])
+                {
+                    string adminUserName = Configuration["AdminAccount:UserName"];
+                    string adminEmail = Configuration["AdminAccount:Email"];
+                    string adminPassword = Configuration["AdminAccount:Password"];
+                    string adminPhoneNumber = Configuration["AdminAccount:PhoneNumber"];
+                    await Register(new userRegisterDTO { userName = adminUserName, Email = adminEmail, Password = adminPassword, phoneNumber = adminPhoneNumber });
+                }
+            
+          
+                // Use only UserManager, not direct DbContext access
+                var user = await _userManager.FindByNameAsync(userLogin.userName);
+                if (user == null) return null;
 
-            // Use only UserManager, not direct DbContext access
-            var user = await _userManager.FindByNameAsync(userLogin.userName);
-            if (user == null) return null;
+                var passwordValid = await _userManager.CheckPasswordAsync(user, userLogin.Password);
+                if (!passwordValid) return null;
 
-            var passwordValid = await _userManager.CheckPasswordAsync(user, userLogin.Password);
-            if (!passwordValid) return null;
+                var roles = await _userManager.GetRolesAsync(user);
 
-            var roles = await _userManager.GetRolesAsync(user);
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? ""),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id)
+                };
 
-            var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, user.UserName),
-        new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? ""),
-        new Claim(ClaimTypes.NameIdentifier, user.Id)
-    };
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
 
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Keys:JwtKey"]));
+                var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Keys:JwtKey"]));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var token = new JwtSecurityToken(
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddDays(1),
+                    signingCredentials: credentials
+                );
 
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(1),
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                return new JwtSecurityTokenHandler().WriteToken(token);
+           
         }
 
         public Task<bool> LogOut()
         {
             return Task.FromResult(true);
-
         }
+
+      
     }
 }
