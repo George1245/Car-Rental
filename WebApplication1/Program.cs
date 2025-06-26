@@ -1,8 +1,8 @@
+using MailKit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
-
+using WebApplication1.Services;
 using Microsoft.Extensions.Configuration;
 
 using Microsoft.IdentityModel.Tokens;
@@ -17,18 +17,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(u =>
 {
-    u.UseSqlServer(builder.Configuration.GetConnectionString("PeterConnection"));
+    u.UseSqlServer(builder.Configuration.GetConnectionString("GeorgeConnection"));
 });
 
 builder.Services.AddIdentity<App_User, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 builder.Services.AddAuthentication(option =>
 {
-    option.DefaultAuthenticateScheme="JWT";
-    option.DefaultChallengeScheme= "JWT";
-    option.DefaultScheme= "JWT";
-}
-
-).AddJwtBearer("JWT", opt =>
+    option.DefaultAuthenticateScheme = "JWT";
+    option.DefaultChallengeScheme = "JWT";
+    option.DefaultScheme = "JWT";
+}).AddJwtBearer("JWT", opt =>
 {
     opt.TokenValidationParameters=new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
@@ -37,6 +35,7 @@ builder.Services.AddAuthentication(option =>
         ValidateIssuer=false
     };
 });
+
 builder.Services.AddAuthorization();
 builder.Services.AddAutoMapper(typeof(Program));
 
@@ -47,6 +46,7 @@ builder.Services.AddScoped<CarRent>();
 builder.Services.AddScoped<IAccountRepository,AccountRepository>();
 builder.Services.AddScoped<IcustomerRepository,CustomerRepository>();
 builder.Services.AddScoped<IOwnerRepository, OwnerRepository>();
+builder.Services.AddScoped<mailService>();
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
