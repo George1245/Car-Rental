@@ -5,7 +5,7 @@ namespace WebApplication1.Repsitory
 {
     public interface IOwnerRepository
     {
-        public bool customerRequestProcess(int rentId,String requestStatus);
+        public  Task<bool> customerRequestProcess(int rentId,String requestStatus);
 
 
 

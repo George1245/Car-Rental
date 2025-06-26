@@ -3,13 +3,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
+using System.Xml;
 using WebApplication1.DTO;
 using WebApplication1.Models;
+using WebApplication1.Services;
 
 namespace WebApplication1.Repsitory
 {
@@ -21,13 +24,15 @@ namespace WebApplication1.Repsitory
         public RoleManager<IdentityRole> _roleManager;
         private readonly AppDbContext _appDbContext;
         public IConfiguration Configuration;
-        public AccountRepository(UserManager<App_User> _userManager, SignInManager<App_User> _signInManager, RoleManager<IdentityRole> _roleManager,AppDbContext appDbContext, IConfiguration _Configuration)
+        private mailService _mailService;
+        public AccountRepository(UserManager<App_User> _userManager, SignInManager<App_User> _signInManager, RoleManager<IdentityRole> _roleManager,AppDbContext appDbContext, IConfiguration _Configuration, mailService _mailService)
         { 
             this._userManager = _userManager;
             this._signInManager = _signInManager;   
             this._roleManager = _roleManager;   
             this._appDbContext = appDbContext;
             Configuration=_Configuration;
+            this._mailService = _mailService;
         }   
 
       
@@ -41,12 +46,10 @@ namespace WebApplication1.Repsitory
                    UserName = userRegister.userName,
                   PhoneNumber = userRegister.phoneNumber,
                 };
+                 
+  
                 IdentityResult userRegisterResult = await _userManager.CreateAsync(app_User,userRegister.Password);
-                
-                if ("peter" != "george")
-                {
-                    
-                }
+
 
                 if (userRegisterResult.Succeeded)
                 {
@@ -61,6 +64,10 @@ namespace WebApplication1.Repsitory
                     {
                          roleResult = await _userManager.AddToRoleAsync(app_User, "User");
 
+                        var token = await _userManager.GenerateEmailConfirmationTokenAsync(app_User);
+                        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+                        string confirmationLink = $"{Configuration["serverRun:localHost"]}Account/confirmemail?userId={app_User.Id}&token={encodedToken}";
+                        await _mailService.sendEmail(app_User.Email, "please open confirmation Link: " + confirmationLink, app_User.UserName, "Email Confirmation");
                     }
                     if (roleResult.Succeeded)
                     { 

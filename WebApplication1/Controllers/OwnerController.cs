@@ -20,10 +20,10 @@ namespace WebApplication1.Controllers
         }
         [Authorize(Roles = "Admin")]
         [HttpPost(nameof(customerRequestProcess))]
-        public ActionResult customerRequestProcess(int rentID,string requestStatus)
+        public async Task <ActionResult> customerRequestProcess(int rentID,string requestStatus)
         {
 
-            if (_ownerRepo.customerRequestProcess(rentID,requestStatus))
+            if (await _ownerRepo.customerRequestProcess(rentID,requestStatus))
                 return Ok("Your request Status"+requestStatus+" is updated!!");
             return BadRequest("Failed to update request");
         }
