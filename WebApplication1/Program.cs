@@ -1,59 +1,74 @@
 using MailKit;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Services;
 using Microsoft.Extensions.Configuration;
-
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using WebApplication1.Models;
 using WebApplication1.Repsitory;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
+
+// ====== DbContext ======
 builder.Services.AddDbContext<AppDbContext>(u =>
 {
-    u.UseSqlServer(builder.Configuration.GetConnectionString("GeorgeConnection"));
+    u.UseSqlServer(builder.Configuration.GetConnectionString("PeterConnection"));
 });
 
-builder.Services.AddIdentity<App_User, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
-builder.Services.AddAuthentication(option =>
+// ====== Identity ======
+builder.Services.AddIdentity<App_User, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+// ====== Authentication (JWT + Google) ======
+builder.Services.AddAuthentication(options =>
 {
-    option.DefaultAuthenticateScheme = "JWT";
-    option.DefaultChallengeScheme = "JWT";
-    option.DefaultScheme = "JWT";
-}).AddJwtBearer("JWT", opt =>
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddCookie() // ÷—Ê—Ì ⁄·‘«‰ Google OAuth callback
+.AddJwtBearer("JWT", opt =>
 {
-    opt.TokenValidationParameters=new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    opt.TokenValidationParameters = new TokenValidationParameters
     {
-        IssuerSigningKey= new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Keys:JwtKey"])),
-        ValidateAudience=false,
-        ValidateIssuer=false
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Keys:JwtKey"])),
+        ValidateAudience = false,
+        ValidateIssuer = false
     };
+})
+.AddGoogle(googleOptions =>
+{
+    googleOptions.ClientId = builder.Configuration["GoogleAuth:ClientId"];
+    googleOptions.ClientSecret = builder.Configuration["GoogleAuth:ClientSecret"];
+    googleOptions.CallbackPath = "/Account/callBack"; // Endpoint ·«” ﬁ»«· —œ Google
 });
 
+// ====== Authorization ======
 builder.Services.AddAuthorization();
+
+// ====== AutoMapper ======
 builder.Services.AddAutoMapper(typeof(Program));
 
+// ====== Custom Services & Repositories ======
 builder.Services.AddScoped<App_User>();
-builder.Services.AddScoped<ICarRepository,CarRepository>();
+builder.Services.AddScoped<ICarRepository, CarRepository>();
 builder.Services.AddScoped<CarRent>();
-
-builder.Services.AddScoped<IAccountRepository,AccountRepository>();
-builder.Services.AddScoped<IcustomerRepository,CustomerRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IcustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IOwnerRepository, OwnerRepository>();
 builder.Services.AddScoped<mailService>();
 
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// ====== Swagger ======
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    // 2a. Define the security scheme
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -64,28 +79,25 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Enter: Bearer {your JWT token}"
     });
 
-    // 2b. Apply globally (so the Authorize button works)
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-          new OpenApiSecurityScheme
-          {
-            Reference = new OpenApiReference
+            new OpenApiSecurityScheme
             {
-              Type = ReferenceType.SecurityScheme,
-              Id = "Bearer"
-            }
-          },
-          new string[] { }
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
         }
     });
-
-    // If using Swashbuckle.Filters for finer control per-operation:
-    // c.OperationFilter<SecurityRequirementsOperationFilter>();
 });
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ====== Middleware ======
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -93,6 +105,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -1,4 +1,5 @@
-﻿using WebApplication1.DTO;
+﻿using System.Security.Claims;
+using WebApplication1.DTO;
 using WebApplication1.Models;
 
 namespace WebApplication1.Repsitory
@@ -7,6 +8,8 @@ namespace WebApplication1.Repsitory
     {
         public Task<bool> Register(userRegisterDTO userRegister);
         public Task<string> LogIn(UserLoginDTO userLogin);
+        public Task<string> generateToken(List<Claim> Claims);
+
         public Task<bool> LogOut();
 
     }
