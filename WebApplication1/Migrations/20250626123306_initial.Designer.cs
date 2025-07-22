@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApplication1.Repsitory;
 
@@ -11,9 +12,11 @@ using WebApplication1.Repsitory;
 namespace WebApplication1.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250626123306_initial")]
+    partial class initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,7 +60,7 @@ namespace WebApplication1.Migrations
                         },
                         new
                         {
-                            Id = "48c6fc7c-9504-48be-b9ca-9ee0303a26fc",
+                            Id = "289f9973-ddbe-4f7a-bc02-e0a229e7ca90",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
