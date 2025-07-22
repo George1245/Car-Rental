@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using WebApplication1.DTO;
@@ -89,6 +93,50 @@ namespace WebApplication1.Controllers
             }
             return BadRequest("your Email is not confirmed");
         }
+        [HttpGet(nameof(callBack))]
+        public async Task<ActionResult> callBack()
+        {
+            var result = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+
+            if (!result.Succeeded)
+                return Unauthorized(result);
+
+            var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
+            var name = result.Principal.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                user = new App_User
+                {
+                    UserName = name.Replace(" ", ""),
+                    Email = email,
+                };
+
+                var createResult = await _userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                    return BadRequest("Failed to create user from Google login");
+            }
+
+            var Claims = new List<Claim>();
+            Claims.Add(new Claim(ClaimTypes.Email, user.Email));
+            Claims.Add(new Claim(ClaimTypes.Name, user.UserName));
+            var Token = _accountRepo.generateToken(Claims);
+            return Ok(Token);
+ 
+
+        }
+        [HttpGet(nameof(googleLogIn))]
+        public async Task<ActionResult> googleLogIn()
+        {
+            var Prorperties = new AuthenticationProperties
+            {
+
+                RedirectUri = Url.Action("callBack")
+            };
+
+            return Challenge(Prorperties, GoogleDefaults.AuthenticationScheme);
+        }  
 
 
     }

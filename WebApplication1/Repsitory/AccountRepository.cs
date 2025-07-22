@@ -118,16 +118,8 @@ namespace WebApplication1.Repsitory
                     claims.Add(new Claim(ClaimTypes.Role, role));
                 }
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Keys:JwtKey"]));
-                var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-                var token = new JwtSecurityToken(
-                    claims: claims,
-                    expires: DateTime.UtcNow.AddDays(1),
-                    signingCredentials: credentials
-                );
-
-                return new JwtSecurityTokenHandler().WriteToken(token);
+   
+            return await generateToken(claims);
            
         }
 
@@ -136,6 +128,19 @@ namespace WebApplication1.Repsitory
             return Task.FromResult(true);
         }
 
-      
+        public async Task<string> generateToken(List<Claim> Claims)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Keys:JwtKey"]));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                claims: Claims,
+                expires: DateTime.UtcNow.AddDays(1),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+
+        }
     }
 }
