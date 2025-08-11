@@ -20,7 +20,7 @@ builder.Services.AddControllers();
 // ====== DbContext ======
 builder.Services.AddDbContext<AppDbContext>(u =>
 {
-    u.UseSqlServer(builder.Configuration.GetConnectionString("GeorgeConnection"));
+    u.UseSqlServer(builder.Configuration.GetConnectionString("PeterConnection"));
 });
 
 // ====== Identity ======
@@ -72,7 +72,7 @@ builder.Services.AddScoped<Message>();
 builder.Services.AddScoped<UserConnection>();
 builder.Services.AddScoped<mailService>();
 builder.Services.AddScoped<ConnectionService>();
-builder.Services.AddScoped<ConnectionService>();
+builder.Services.AddScoped<ChatHub>();
 
 builder.Services.AddCors(options =>
 {

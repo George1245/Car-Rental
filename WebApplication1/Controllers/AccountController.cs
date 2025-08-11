@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using WebApplication1.DTO;
+using WebApplication1.Hubs;
 using WebApplication1.Models;
 using WebApplication1.Repsitory;
 using WebApplication1.Services;
@@ -24,11 +25,13 @@ namespace WebApplication1.Controllers
         public IAccountRepository _accountRepo;
         public UserManager<App_User> _userManager;
         public ConnectionService connection;
-        
-        public AccountController(IAccountRepository _accountRepo, UserManager<App_User> _userManager, ConnectionService connection) { 
+        public ChatHub chathub;
+
+        public AccountController(IAccountRepository _accountRepo, UserManager<App_User> _userManager, ConnectionService connection,ChatHub _chathub) { 
         this._accountRepo = _accountRepo;   
         this._userManager = _userManager;
             this.connection = connection;
+            chathub=_chathub;
         }
         [HttpPost(nameof(Register))]
         public async Task<IActionResult> Register(userRegisterDTO _user)
@@ -58,16 +61,7 @@ namespace WebApplication1.Controllers
                     {
                         var token = await _accountRepo.LogIn(_user);
                         if (!string.IsNullOrEmpty(token))
-                        {
-                            Response.Cookies.Append("YourAppAuthCookie", token, new CookieOptions
-                            {
-                                //HttpOnly = true,
-                                //Secure = true,  // must be true with SameSite=None
-                                //SameSite = SameSiteMode.None,
-                                Expires = DateTimeOffset.UtcNow.AddDays(90)
-                            });
-
-                            // Don't check Request.Cookies here, it won't have the cookie yet
+                        {                          
                             return Ok(token);
                         }
                     }
@@ -169,6 +163,22 @@ namespace WebApplication1.Controllers
             }
             return BadRequest("error!!");
         }
+        [HttpPost(nameof(ChatWithOpenAi))]
+        public async Task<ActionResult> ChatWithOpenAi(string message)
+        {
+            chathub.SendMessageToBot(message);
+         
+            return BadRequest("error!!");
+        }
+
+       
+         [HttpPost(nameof(ReceiveCallback))]
+         public IActionResult ReceiveCallback([FromBody] object data)
+         {
+              Console.WriteLine("📩 Callback received: " + data);
+              return Ok();
+         }
+        
         [HttpPost(nameof(Logout))]
         public  ActionResult Logout()
         {

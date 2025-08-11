@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Org.BouncyCastle.Tls;
 using System.Security.Claims;
+using System.Text;
 using WebApplication1.Controllers;
 using WebApplication1.Models;
 using WebApplication1.Repsitory;
 using WebApplication1.Services;
-
+using Newtonsoft.Json;
 namespace WebApplication1.Hubs
 {
     public class ChatHub : Hub
@@ -26,23 +27,36 @@ namespace WebApplication1.Hubs
             this._httpContextAccessor = _httpContextAccessor;
         }
 
-        public async Task SendMessage(string message, string receiverId,string SenderId )
+        public string GetCurrentUserId()
         {
-            var senderId = SenderId;
+            List<Claim> claims = null;
 
-           
-            await Clients.User(receiverId).SendAsync("RecieveMessage", senderId, message);
+            string tokenHeader = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            string token = tokenHeader.StartsWith("Bearer ") ? tokenHeader.Substring(7) : tokenHeader;
+            claims = connectionservice.GetClaimsFromJwt(token);
 
+           return claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        }
+        public async Task SendMessage(string message, string receiverId)
+        {
+            string senderId = GetCurrentUserId();
+            UserConnection ReciverUserId = _context.userconnection.FirstOrDefault(u => u.UserId == receiverId);
+            if (ReciverUserId != null)
+                await Clients.User(receiverId).SendAsync("RecieveMessage", senderId, message);
+         
+
+
+                var newMessage = new Message
+                {
+                    SenderId = senderId,
+                    RecieverId = receiverId,
+                    MessageContent = message,
+                    Date = DateTime.Now
+                };
+
+                _chatRepository.StoreMessage(newMessage);
             
-            var newMessage = new Message
-            {
-                SenderId = senderId,
-                RecieverId = receiverId,
-                MessageContent = message,
-                Date = DateTime.Now
-            };
-
-            _chatRepository.StoreMessage(newMessage);
         }
 
         public override async Task OnConnectedAsync()
@@ -55,15 +69,9 @@ namespace WebApplication1.Hubs
             }
             List<Claim> claims=null;
 
-            if (context.Request.Cookies.ContainsKey("YourAppAuthCookie"))
-            {
-                claims = connectionservice.GetClaimsFromJwt(context.Request.Cookies["YourAppAuthCookie"]);
-            }
-            
-            
+            string UserId = GetCurrentUserId();
             _userConnection.ConnectionId = Context.ConnectionId;
-            _userConnection.UserId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
+            _userConnection.UserId = UserId;
 
             _accountRepository.AddConnectionIdToUser(_userConnection);
 
@@ -76,6 +84,33 @@ namespace WebApplication1.Hubs
 
             await base.OnDisconnectedAsync(exception);
         }
+
+        public async Task SendMessageToBot(string message)
+        {
+            string UserId = GetCurrentUserId();
+            var webhookUrl = $"https://n8n-qyhxkclo.us-west-1.clawcloudrun.com/webhook-test/chat?message={message}&UserId={UserId}";
+
+            using (var httpClient = new HttpClient())
+            {
+                var content = new StringContent(
+                    JsonConvert.SerializeObject(new { text = message }),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var response = await httpClient.GetAsync(webhookUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Message sent to chatbot successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to send message to chatbot.");
+                }
+            }
+        }
+
     }
 
 }
