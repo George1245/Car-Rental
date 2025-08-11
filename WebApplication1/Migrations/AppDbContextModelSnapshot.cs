@@ -51,13 +51,13 @@ namespace WebApplication1.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "d9a89e49-351c-4eec-8ab5-3f64973519c2",
+                            Id = "cd31d39e-e1ba-4305-82fc-e4dabb5cac9f",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "48c6fc7c-9504-48be-b9ca-9ee0303a26fc",
+                            Id = "d692c559-0b7a-44ef-af7b-65b74d107b30",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -316,6 +316,62 @@ namespace WebApplication1.Migrations
                     b.ToTable("Rents");
                 });
 
+            modelBuilder.Entity("WebApplication1.Models.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MessageContent")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecieverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("read")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecieverId");
+
+                    b.ToTable("message");
+                });
+
+            modelBuilder.Entity("WebApplication1.Models.UserConnection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ConnectionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("userconnection");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -384,6 +440,28 @@ namespace WebApplication1.Migrations
                     b.Navigation("User");
 
                     b.Navigation("car");
+                });
+
+            modelBuilder.Entity("WebApplication1.Models.Message", b =>
+                {
+                    b.HasOne("WebApplication1.Models.App_User", "User")
+                        .WithMany()
+                        .HasForeignKey("RecieverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("WebApplication1.Models.UserConnection", b =>
+                {
+                    b.HasOne("WebApplication1.Models.App_User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

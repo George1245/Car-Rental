@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using WebApplication1.DTO;
 using WebApplication1.Models;
 using WebApplication1.Repsitory;
+using WebApplication1.Services;
+using static System.Net.WebRequestMethods;
 
 namespace WebApplication1.Controllers
 {
@@ -21,9 +23,12 @@ namespace WebApplication1.Controllers
     {
         public IAccountRepository _accountRepo;
         public UserManager<App_User> _userManager;
-        public AccountController(IAccountRepository _accountRepo, UserManager<App_User> _userManager) { 
+        public ConnectionService connection;
+        
+        public AccountController(IAccountRepository _accountRepo, UserManager<App_User> _userManager, ConnectionService connection) { 
         this._accountRepo = _accountRepo;   
         this._userManager = _userManager;
+            this.connection = connection;
         }
         [HttpPost(nameof(Register))]
         public async Task<IActionResult> Register(userRegisterDTO _user)
@@ -46,27 +51,36 @@ namespace WebApplication1.Controllers
         {
             if (_user != null)
             {
-                App_User User = await _userManager.FindByNameAsync(_user.userName);
-                if (User != null)
+                var user = await _userManager.FindByNameAsync(_user.userName);
+                if (user != null)
                 {
-                    if (await _userManager.IsEmailConfirmedAsync(User))
+                    if (await _userManager.IsEmailConfirmedAsync(user))
                     {
-                        if (await _accountRepo.LogIn(_user) != null)
+                        var token = await _accountRepo.LogIn(_user);
+                        if (!string.IsNullOrEmpty(token))
                         {
-                            return Ok(await _accountRepo.LogIn(_user));
+                            Response.Cookies.Append("YourAppAuthCookie", token, new CookieOptions
+                            {
+                                //HttpOnly = true,
+                                //Secure = true,  // must be true with SameSite=None
+                                //SameSite = SameSiteMode.None,
+                                Expires = DateTimeOffset.UtcNow.AddDays(90)
+                            });
+
+                            // Don't check Request.Cookies here, it won't have the cookie yet
+                            return Ok(token);
                         }
                     }
                     else
                     {
-                        return Unauthorized("please confirm your email!");
+                        return Unauthorized("Please confirm your email!");
                     }
-              
                 }
-
             }
- 
+
             return BadRequest();
         }
+
 
         [Authorize(Roles ="Admin")]
         [HttpGet(nameof(Test))]
@@ -136,7 +150,31 @@ namespace WebApplication1.Controllers
             };
 
             return Challenge(Prorperties, GoogleDefaults.AuthenticationScheme);
-        }  
+        }
+        [Authorize(Roles = "User")]
+        [HttpPost(nameof(Chat))]
+        public async Task <ActionResult> Chat(string message,string recieverid)
+        {
+
+            List<Claim> claims=null;
+            if (Request.Cookies.TryGetValue("YourAppAuthCookie", out var token))
+            {
+                 claims = connection.GetClaimsFromJwt(token);
+            }
+            
+            var id = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (await connection.EstablishConnection(recieverid, message, id))
+            {
+                return Ok("message sent!!");
+            }
+            return BadRequest("error!!");
+        }
+        [HttpPost(nameof(Logout))]
+        public  ActionResult Logout()
+        {
+            _accountRepo.LogOut();
+            return Ok();
+        }
 
 
     }

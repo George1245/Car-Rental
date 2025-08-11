@@ -22,6 +22,7 @@ namespace WebApplication1.Repsitory
 
         public SignInManager<App_User> _signInManager;
         public RoleManager<IdentityRole> _roleManager;
+       
         private readonly AppDbContext _appDbContext;
         public IConfiguration Configuration;
         private mailService _mailService;
@@ -123,9 +124,10 @@ namespace WebApplication1.Repsitory
            
         }
 
-        public Task<bool> LogOut()
+        public async void LogOut()
         {
-            return Task.FromResult(true);
+            await _signInManager.SignOutAsync();
+           
         }
 
         public async Task<string> generateToken(List<Claim> Claims)
@@ -141,6 +143,17 @@ namespace WebApplication1.Repsitory
 
             return new JwtSecurityTokenHandler().WriteToken(token);
 
+        }
+        public void AddConnectionIdToUser(UserConnection userConnection)
+        {
+            _appDbContext.userconnection.Add(userConnection);
+            _appDbContext.SaveChanges();
+        }
+        public void RemoveConnectionFromUser(string connectionid)
+        {
+            UserConnection userConnection = _appDbContext.userconnection.FirstOrDefault(x => x.ConnectionId == connectionid);
+            _appDbContext.userconnection.Remove(userConnection);
+            _appDbContext.SaveChanges();
         }
     }
 }
