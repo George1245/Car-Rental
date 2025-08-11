@@ -10,6 +10,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using WebApplication1.Models;
 using WebApplication1.Repsitory;
+using WebApplication1.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,7 @@ builder.Services.AddControllers();
 // ====== DbContext ======
 builder.Services.AddDbContext<AppDbContext>(u =>
 {
-    u.UseSqlServer(builder.Configuration.GetConnectionString("PeterConnection"));
+    u.UseSqlServer(builder.Configuration.GetConnectionString("GeorgeConnection"));
 });
 
 // ====== Identity ======
@@ -28,10 +29,11 @@ builder.Services.AddIdentity<App_User, IdentityRole>()
     .AddDefaultTokenProviders();
 
 // ====== Authentication (JWT + Google) ======
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = "JWT";
+    options.DefaultChallengeScheme = "JWT";
 })
 .AddCookie() // ÷—Ê—Ì ⁄·‘«‰ Google OAuth callback
 .AddJwtBearer("JWT", opt =>
@@ -47,11 +49,13 @@ builder.Services.AddAuthentication(options =>
 {
     googleOptions.ClientId = builder.Configuration["GoogleAuth:ClientId"];
     googleOptions.ClientSecret = builder.Configuration["GoogleAuth:ClientSecret"];
-    googleOptions.CallbackPath = "/Account/callBack"; // Endpoint ·«” ﬁ»«· —œ Google
+    googleOptions.CallbackPath = "/Account/callBack"; 
 });
 
 // ====== Authorization ======
 builder.Services.AddAuthorization();
+// ====== signalR ======
+builder.Services.AddSignalR();
 
 // ====== AutoMapper ======
 builder.Services.AddAutoMapper(typeof(Program));
@@ -63,8 +67,23 @@ builder.Services.AddScoped<CarRent>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IcustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IOwnerRepository, OwnerRepository>();
+builder.Services.AddScoped<IchatRepository, ChatMessage>();
+builder.Services.AddScoped<Message>();
+builder.Services.AddScoped<UserConnection>();
 builder.Services.AddScoped<mailService>();
+builder.Services.AddScoped<ConnectionService>();
+builder.Services.AddScoped<ConnectionService>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5201")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 // ====== Swagger ======
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -102,12 +121,19 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+   
 }
+
+app.UseCors();
+app.UseWebSockets();
 
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/ChatHub");
 
 app.MapControllers();
 

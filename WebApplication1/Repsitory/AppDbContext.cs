@@ -37,6 +37,8 @@ namespace WebApplication1.Repsitory
             });
         }
         public virtual DbSet <Car>  Cars{ get; set; }
+        public virtual DbSet <UserConnection>  userconnection{ get; set; }
+        public virtual DbSet <Message>  message{ get; set; }
         public virtual DbSet <CarRent> Rents{ get; set; }
     }
 }
