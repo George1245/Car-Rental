@@ -20,7 +20,7 @@ builder.Services.AddControllers();
 // ====== DbContext ======
 builder.Services.AddDbContext<AppDbContext>(u =>
 {
-    u.UseSqlServer(builder.Configuration.GetConnectionString("PeterConnection"));
+    u.UseSqlServer(builder.Configuration.GetConnectionString("GeorgeConnection"));
 });
 
 // ====== Identity ======

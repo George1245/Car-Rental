@@ -29,7 +29,7 @@ namespace WebApplication1.Controllers
             return BadRequest("There is no car with this Id");
         }
 
-        [Authorize(Roles ="User")]
+        [Authorize(Roles ="User,Admin")]
         [HttpGet(nameof(getAllCars))]
         public ActionResult getAllCars()
         {

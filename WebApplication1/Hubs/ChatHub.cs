@@ -85,10 +85,11 @@ namespace WebApplication1.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task SendMessageToBot(string message)
+        public async Task<string> SendMessageToBot(string message)
         {
+            
             string UserId = GetCurrentUserId();
-            var webhookUrl = $"https://n8n-qyhxkclo.us-west-1.clawcloudrun.com/webhook-test/chat?message={message}&UserId={UserId}";
+            var webhookUrl = $"https://n8n-qyhxkclo.us-west-1.clawcloudrun.com/webhook/chat?message={message}&UserId={UserId}";
 
             using (var httpClient = new HttpClient())
             {
@@ -99,14 +100,15 @@ namespace WebApplication1.Hubs
                 );
 
                 var response = await httpClient.GetAsync(webhookUrl);
-
+                var responseString = await response.Content.ReadAsStringAsync();
+                
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Message sent to chatbot successfully.");
+                    return responseString;
                 }
                 else
                 {
-                    Console.WriteLine("Failed to send message to chatbot.");
+                    return "error has happenned";
                 }
             }
         }

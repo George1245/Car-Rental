@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Org.BouncyCastle.Pqc.Crypto.Lms;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using WebApplication1.Models;
 using WebApplication1.Repsitory;
 using WebApplication1.Services;
 using static System.Net.WebRequestMethods;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WebApplication1.Controllers
 {
@@ -76,12 +78,7 @@ namespace WebApplication1.Controllers
         }
 
 
-        [Authorize(Roles ="Admin")]
-        [HttpGet(nameof(Test))]
-        public ActionResult Test()
-        {
-            return Ok("you are authorzed");
-        }
+ 
 
         [HttpGet(nameof(confirmemail))]
         public async Task<ActionResult> confirmemail(string userId, string token)
@@ -163,22 +160,22 @@ namespace WebApplication1.Controllers
             }
             return BadRequest("error!!");
         }
-        [HttpPost(nameof(ChatWithOpenAi))]
-        public async Task<ActionResult> ChatWithOpenAi(string message)
+        [HttpPost(nameof(ChatWithAIBot))]
+        public async Task<ActionResult> ChatWithAIBot(string message)
         {
-            chathub.SendMessageToBot(message);
-         
-            return BadRequest("error!!");
+         string ReturnedMessage  =await chathub.SendMessageToBot(message);
+
+            if (ReturnedMessage != "error has happenned")
+            {
+                return Ok(ReturnedMessage);
+            }
+            else
+            {
+                return BadRequest(ReturnedMessage);
+            }
         }
 
-       
-         [HttpPost(nameof(ReceiveCallback))]
-         public IActionResult ReceiveCallback([FromBody] object data)
-         {
-              Console.WriteLine("📩 Callback received: " + data);
-              return Ok();
-         }
-        
+
         [HttpPost(nameof(Logout))]
         public  ActionResult Logout()
         {
